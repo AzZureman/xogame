@@ -1,23 +1,38 @@
 {
-  "type":"singlePlayer",
-  "name":"XO",
-  "players":[
-    {
-      "name":"player",
-      "figure":"O"
-    },{
-      "name":"AI",
-      "figure":"X"
-    }
-  ],
-  "field":{
-    "size":3,
-    "figures":[
-      [null,null,null],
-      [null,null,null],
-      [null,null,null]
+  "type": "singlePlayer",
+  "name": "XO",
+  "player1": {
+    "player": {
+      "name": "player"
+    },
+    "figure": "O"
+  },
+  "player2": {
+    "player": {
+      "name": "AI"
+    },
+    "figure": "X"
+  },
+  "field": {
+    "size": 3,
+    "figures": [
+      [
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        null
+      ]
     ]
   },
-  "turn":"X",
-  "winner":null
+  "turn": "X",
+  "winner": null
 }

@@ -7,6 +7,8 @@ import learning.java.game.rest.request.TurnGameRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
+
 @RestController
 @RequestMapping("game")
 public class GameRestController {
@@ -16,18 +18,18 @@ public class GameRestController {
 
     @GetMapping("{id}")
     @ResponseBody
-    public Game gameFromId(@PathVariable String id) {
+    public Game gameFromId(@PathVariable String id) throws SQLException {
         return gameService.getGameFromId(id);
     }
 
     @PostMapping
-    public @ResponseBody Game postGame(@RequestBody CreateGameRequest createGameRequest) {
+    public @ResponseBody Game postGame(@RequestBody CreateGameRequest createGameRequest) throws SQLException {
         return gameService.postNewGame(createGameRequest);
     }
 
     @PostMapping("{id}/turn")
     public  @ResponseBody Game turn(@RequestBody TurnGameRequest turnGameRequest,
-                                     @PathVariable String id) {
+                                     @PathVariable String id) throws SQLException {
 
         return gameService.turnGameFromId(turnGameRequest, id);
     }

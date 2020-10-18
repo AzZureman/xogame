@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Field {
 
+    @JsonIgnore
+    private int id = -1;
+
     private int size;
 
     @JsonIgnore
@@ -13,6 +16,7 @@ public class Field {
     private Figure[][] figures;
 
     public Field() {
+        this(3);
     }
 
     public Field(int size) {
@@ -31,19 +35,20 @@ public class Field {
 
     }
 
-    public void setFigures(final Point point, final Figure figure) {
+    public void setFigure(final Point point, final Figure figure) {
         int x = point.getX();
         int y = point.getY();
         if (x >= size || x < 0 || y >= size || y < 0)
             throw new IndexOutOfBoundsException
                     ("Incorrect index.Expected point x = " + x + ", point y = " + y +
-                            ". They must fall into the interval 0 <= point > " + size );
+                            ". They must fall into the interval 0 <= point > " + size);
 
         Figure actualFigure = figures[x][y];
         if (actualFigure != null)
-            throw  new IllegalArgumentException
+            throw new IllegalArgumentException
                     ("Incorrect index. Figure in point x = " + x + ", point y = " + y +
-                            "Not NULL");
+                            " not NULL!\n" + this.toString());
+
         figures[x][y] = figure;
         counterFigure++;
     }
@@ -57,20 +62,34 @@ public class Field {
         return figures;
     }
 
+    public void setFigures(Figure[][] figures) {
+        this.figures = figures;
+    }
+
     public int getCounterFigure() {
         return counterFigure;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
 
     @Override
     public String toString() {
+        if (figures == null)
+            return "null";
         StringBuilder str = new StringBuilder();
 
-        for (Figure [] i : figures) {
+        for (Figure[] i : figures) {
             str.append("\n");
             for (Figure j : i)
                 str.append(j).append(" ");
         }
         return str.toString();
     }
+
 }

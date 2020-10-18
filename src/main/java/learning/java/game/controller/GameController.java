@@ -7,7 +7,9 @@ import learning.java.game.model.Point;
 
 public interface GameController {
 
-    void letsPlay(Game game, Point point);
+    Game newGame(Figure figure);
+
+    Figure letsPlay(Game game, Point point);
 
     Figure currentFigure(final Field field);
 

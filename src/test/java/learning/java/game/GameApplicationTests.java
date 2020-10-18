@@ -1,6 +1,7 @@
 package learning.java.game;
 
-import learning.java.game.dao.Dao;
+import learning.java.game.controller.GameControllerSingle;
+import learning.java.game.dao.*;
 import learning.java.game.model.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -36,7 +38,10 @@ public class GameApplicationTests {
     private MockMvc mockMvc;
 
     @Autowired
-    private Dao<Game, UUID> dao;
+    private GamesDao dao;
+
+    @Autowired
+    private PlayersDao playersDao;
 
     @Test
     void testPostGame() throws Exception {
@@ -105,7 +110,8 @@ public class GameApplicationTests {
         mockMvcPostRequest(url, request, response, status().isOk());
 
         //repeatedly check figure on point(2,2)
-        Figure figureActual = game.getField().getFigure(point);
+        Game actualGame = dao.read(game.getId());
+        Figure figureActual = actualGame.getField().getFigure(point);
         assertEquals(Figure.O, figureActual);
     }
 
@@ -146,23 +152,15 @@ public class GameApplicationTests {
 
     //further are private methods
 
-    private Game createGameXO(Dao dao) {
-        Game game = new Game(
-                "singlePlayer",
-                "XO",
-                new ArrayList<Player>(){{
-                    add(new Player("player", Figure.O));
-                    add(new Player("AI", Figure.X));
-                }},
-                new Field(3)
-        ) {{
-            setTurn(Figure.X);
-            setWinner(null);
-        }};
-
+    private Game createGameXO(Dao<Game, UUID> dao) throws SQLException {
+        GameControllerSingle controllerSingle = new GameControllerSingle();
+        Game game = controllerSingle.newGame(Figure.O);
+        playersDao.create(game.getPlayer1().getPlayer());
+        playersDao.create(game.getPlayer2().getPlayer());
         dao.create(game);
         return game;
     }
+
 
     private String readFromJson(String json)
             throws IOException {
@@ -187,7 +185,7 @@ public class GameApplicationTests {
                 .andExpect(content().json(response));
     }
 
-    private String createGameAndReturnId(Dao dao) {
+    private String createGameAndReturnId(Dao<Game, UUID> dao) throws SQLException {
         Game expectedGame = createGameXO(dao);
         return expectedGame.getId().toString();
     }

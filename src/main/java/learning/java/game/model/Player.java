@@ -8,22 +8,15 @@ public class Player {
 
     private String name;
 
-    private Figure figure;
-
     public Player() {
     }
 
-    public Player(String name, Figure figure) {
+    public Player(String name) {
         this.name = name;
-        this.figure = figure;
     }
 
     public String getName() {
         return name;
-    }
-
-    public Figure getFigure() {
-        return figure;
     }
 
     public UUID getId() {
@@ -38,7 +31,4 @@ public class Player {
         this.name = name;
     }
 
-    public void setFigure(Figure figure) {
-        this.figure = figure;
-    }
 }

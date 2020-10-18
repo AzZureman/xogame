@@ -1,9 +1,6 @@
 package learning.java.game.controller;
 
-import learning.java.game.model.Field;
-import learning.java.game.model.Figure;
-import learning.java.game.model.Game;
-import learning.java.game.model.Point;
+import learning.java.game.model.*;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
@@ -11,18 +8,39 @@ import java.util.Random;
 @Component
 public class GameControllerSingle implements GameController {
 
-    public void letsPlay(Game game, Point point) {
-        Field field = game.getField();
+    public Game newGame(Figure figure) {
+        return new Game(){{
+            setType("singlePlayer");
+            setName("XO");
+            setPlayer1(new PlayerFigure(){{
+                setPlayer(new Player("player"));
+                setFigure(figure);
+            }});
+            setPlayer2(new PlayerFigure(){{
+                setPlayer(new Player("AI"));
+                setFigure(oppositeFig(figure));
+            }});
+            setField(new Field(3));
+            setTurn(Figure.X);
+        }};
+    }
 
-        if (game.getPlayers().get(0).getFigure() == Figure.X) {
+    private Figure oppositeFig(Figure figure) {
+        return Figure.X == figure ? Figure.O : Figure.X;
+    }
+
+    public Figure letsPlay(Game game, Point point) {
+        Field field = game.getField();
+        if (game.getPlayer1().getFigure() == Figure.X) {
             applyFigure(field, point);
             randomMove(field);
             game.setWinner(checkLineWinner(field));
-            return;
+            return game.getWinner();
         }
         randomMove(field);
         applyFigure(field, point);
         game.setWinner(checkLineWinner(field));
+        return game.getWinner();
     }
 
     private void randomMove(final Field field) {
@@ -32,14 +50,14 @@ public class GameControllerSingle implements GameController {
         Point point = new Point(random.nextInt(size), random.nextInt(size));
 
         try {
-            field.setFigures(point, figure);
+            field.setFigure(point, figure);
         } catch (IllegalArgumentException e) {
             randomMove(field);
         }
     }
 
     private void applyFigure(final Field field, final Point point) {
-        field.setFigures(point, currentFigure(field));
+        field.setFigure(point, currentFigure(field));
     }
 
     public Figure currentFigure(final Field field) {

@@ -1,13 +1,15 @@
 package learning.java.game.dao;
 
+import java.sql.SQLException;
+
 public interface Dao<Entity, Key> {
 
-    boolean create(Entity entity);
+    Key create(Entity entity) throws SQLException;
 
-    Entity read(Key key);
+    Entity read(Key key) throws SQLException;
 
-    boolean update(Entity entity);
+    Key update(Entity entity) throws SQLException;
 
-    boolean delete(Entity entity);
+    boolean delete(Entity entity) throws SQLException;
 
 }

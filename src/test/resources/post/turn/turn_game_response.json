@@ -2,18 +2,21 @@
   "id": "${id}",
   "type":"singlePlayer",
   "name":"XO",
-  "players":[
-    {
-      "name":"player",
-      "figure":"O"
-    },{
-      "name":"AI",
-      "figure":"X"
-    }
-  ],
-  "field":{
-    "size":3
+  "player1": {
+    "player": {
+      "name": "player"
+    },
+    "figure": "O"
   },
-  "turn":"X",
-  "winner":null
+  "player2": {
+    "player": {
+      "name": "AI"
+    },
+    "figure": "X"
+  },
+  "field": {
+    "size": 3
+  },
+  "turn": "X",
+  "winner": null
 }

@@ -38,24 +38,24 @@ public class Field {
     public void setFigure(final Point point, final Figure figure) {
         int x = point.getX();
         int y = point.getY();
-        if (x >= size || x < 0 || y >= size || y < 0)
-            throw new IndexOutOfBoundsException
-                    ("Incorrect index.Expected point x = " + x + ", point y = " + y +
-                            ". They must fall into the interval 0 <= point > " + size);
-
-        Figure actualFigure = figures[x][y];
-        if (actualFigure != null)
-            throw new IllegalArgumentException
-                    ("Incorrect index. Figure in point x = " + x + ", point y = " + y +
-                            " not NULL!\n" + this.toString());
-
+        checkPoint(x, y);
         figures[x][y] = figure;
         counterFigure++;
     }
 
     public Figure getFigure(final Point point) {
-        return figures[point.getX()][point.getY()];
+        int x = point.getX();
+        int y = point.getY();
+        checkPoint(x, y);
+        return figures[x][y];
 
+    }
+
+    private void checkPoint(int x, int y) {
+        if (x >= size || x < 0 || y >= size || y < 0)
+            throw new IndexOutOfBoundsException
+                    ("Incorrect index.Expected point x = " + x + ", point y = " + y +
+                            ". They must fall into the interval 0 <= point > " + size);
     }
 
     public Figure[][] getFigures() {

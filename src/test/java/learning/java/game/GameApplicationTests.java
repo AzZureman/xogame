@@ -1,10 +1,16 @@
 package learning.java.game;
 
 import learning.java.game.controller.GameControllerSingle;
-import learning.java.game.dao.*;
-import learning.java.game.model.*;
+import learning.java.game.dao.Dao;
+import learning.java.game.dao.GamesDao;
+import learning.java.game.dao.PlayersDao;
+import learning.java.game.model.Figure;
+import learning.java.game.model.Game;
+import learning.java.game.model.Player;
+import learning.java.game.model.Point;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,11 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -45,8 +49,11 @@ public class GameApplicationTests {
 
     @Test
     void testPostGame() throws Exception {
-        String request = readFromJson("/post/create/create_game_request.json");
-        String response = readFromJson("/post/create/create_game_response.json");
+        String id = playersDao.create(new Player("player")).toString();
+        String request = readFromJson("/post/create/create_game_request.json")
+                .replace("${id}", id);
+        String response = readFromJson("/post/create/create_game_response.json")
+                .replace("${id}", id);
 
         mockMvcPostRequest("/game", request, response, status().isOk());
     }
@@ -54,8 +61,13 @@ public class GameApplicationTests {
     @Test
     void testFailIfPostRequestWithIncorrectBody() throws Exception {
         String url = "/game";
-        String request1 = readFromJson("/post/create/create_incorrect_request1.json");
-        String request2 = readFromJson("/post/create/create_incorrect_request2.json");
+        String id = playersDao.create(new Player("player")).toString();
+        String request1 = readFromJson("/post/create/create_incorrect_request1.json")
+                .replace("${id}", id);
+        String request2 = readFromJson("/post/create/create_incorrect_request2.json")
+                .replace("${id}", id);
+        String request4 = readFromJson("/post/create/create_incorrect_request4.json")
+                .replace("${id}", UUID.randomUUID().toString());
         String request3 = readFromJson("/post/create/create_incorrect_request3.json");
         String response = readFromJson("/bad.response/bad_request.json");
         ResultMatcher badRequest = status().isBadRequest();
@@ -63,13 +75,20 @@ public class GameApplicationTests {
         mockMvcPostRequest(url, request1, response, badRequest);
         mockMvcPostRequest(url, request2, response, badRequest);
         mockMvcPostRequest(url, request3, response, badRequest);
+        try {
+            mockMvcPostRequest(url, request4, response, badRequest);
+            fail();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
     void testGameFromId() throws Exception {
         String id = createGameAndReturnId(dao);
         String urlTemplate = "/game/" + id;
-        String response = readFromJson("/get/get_game_response.json").replace("${id}", id);
+        String response = readFromJson("/get/get_game_response.json")
+                .replace("${id}", id);
 
         mockMvcGetRequest(urlTemplate, response, status().isOk());
     }
@@ -105,26 +124,29 @@ public class GameApplicationTests {
         String url = "/game/" + id + "/turn";
         String request = readFromJson("/post/turn/turn_game_request.json");
         String response = readFromJson("/post/turn/turn_game_response.json")
-                .replace("${id}", id);
+                .replace("${id}", id)
+                .replace("${id1}", game.getPlayer1().getPlayer().getId().toString());
 
         mockMvcPostRequest(url, request, response, status().isOk());
 
         //repeatedly check figure on point(2,2)
         Game actualGame = dao.read(game.getId());
         Figure figureActual = actualGame.getField().getFigure(point);
-        assertEquals(Figure.O, figureActual);
+        assertEquals(Figure.X, figureActual);
     }
 
     @Test
     void testFailWhenTryTurnWIthIncorrectGameId() throws Exception {
-        String id = createGameAndReturnId(dao);
+        Game game = createGameXO(dao);
+        String id = game.getId().toString();
         String url = "/game/" + id + "/turn";
         String urlBad1 = "/game/" + UUID.randomUUID() + "/turn";
         String urlBad2 = "/game/" + "Incorrect path" + "/turn";
 
         String request = readFromJson("/post/turn/turn_game_request.json");
         String response = readFromJson("/post/turn/turn_game_response.json")
-                .replace("${id}", id);
+                .replace("${id}", id)
+                .replace("${id1}", game.getPlayer1().getPlayer().getId().toString());
         String responseBad1 = readFromJson("/bad.response/not_found.json");
         String responseBad2= readFromJson("/bad.response/bad_request.json");
 
@@ -152,11 +174,10 @@ public class GameApplicationTests {
 
     //further are private methods
 
-    private Game createGameXO(Dao<Game, UUID> dao) throws SQLException {
+    private Game createGameXO(Dao<Game, UUID> dao)  {
         GameControllerSingle controllerSingle = new GameControllerSingle();
-        Game game = controllerSingle.newGame(Figure.O);
+        Game game = controllerSingle.newGame(Figure.X, new Player("player"), null);
         playersDao.create(game.getPlayer1().getPlayer());
-        playersDao.create(game.getPlayer2().getPlayer());
         dao.create(game);
         return game;
     }
@@ -185,7 +206,7 @@ public class GameApplicationTests {
                 .andExpect(content().json(response));
     }
 
-    private String createGameAndReturnId(Dao<Game, UUID> dao) throws SQLException {
+    private String createGameAndReturnId(Dao<Game, UUID> dao)  {
         Game expectedGame = createGameXO(dao);
         return expectedGame.getId().toString();
     }

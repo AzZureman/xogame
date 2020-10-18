@@ -1,23 +1,27 @@
 package learning.java.game.controller;
 
+import learning.java.game.exception.GameOverException;
 import learning.java.game.model.*;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
+import java.util.function.BiFunction;
 
 @Component
 public class GameControllerSingle implements GameController {
 
-    public Game newGame(Figure figure) {
+    public Game newGame(Figure figure, Player player1, Player player2) {
         return new Game(){{
             setType("singlePlayer");
             setName("XO");
             setPlayer1(new PlayerFigure(){{
-                setPlayer(new Player("player"));
+                setPlayer(player1);
                 setFigure(figure);
             }});
             setPlayer2(new PlayerFigure(){{
-                setPlayer(new Player("AI"));
+                setPlayer(new Player("AI"){{
+                    setId(null);
+                }});
                 setFigure(oppositeFig(figure));
             }});
             setField(new Field(3));
@@ -34,12 +38,12 @@ public class GameControllerSingle implements GameController {
         if (game.getPlayer1().getFigure() == Figure.X) {
             applyFigure(field, point);
             randomMove(field);
-            game.setWinner(checkLineWinner(field));
+            game.setWinner(checkAndSetWinner(game));
             return game.getWinner();
         }
         randomMove(field);
         applyFigure(field, point);
-        game.setWinner(checkLineWinner(field));
+        game.setWinner(checkAndSetWinner(game));
         return game.getWinner();
     }
 
@@ -68,65 +72,50 @@ public class GameControllerSingle implements GameController {
     private final Figure X = Figure.X;
     private final Figure O = Figure.O;
 
-    public Figure checkLineWinner(final Field field) {
-        int fieldSize = field.getSize();
+    private Figure checkAndSetWinner(final Game game) {
+        final Figure figure = checkLineWinner(game);
+        if (figure != null) {
+            game.setWinner(figure);
+            throw new GameOverException(game);
+        }
+        return null;
+    }
 
-        int counterX = 0;
+    private Figure checkLineWinner(final Game game) {
+        int fieldSize = game.getField().getSize();
+        for (int i = 0; i < fieldSize; i++) {
+            final Figure figure = checkLine(game, i, (x, y) -> new Point(x, y));
+            if (figure != null)
+                return figure;
+        }
 
+        for (int i = 0; i < fieldSize; i++) {
+            final Figure figure2 = checkLine(game, i, (x, y) -> new Point(y, x));
+            if (figure2 != null)
+                return figure2;
+        }
+
+        final Figure figure3 = checkLine(game, -1, (x, y) -> new Point(y, y));
+        if (figure3 != null)
+            return figure3;
+
+        final Figure figure4 = checkLine(game, fieldSize - 1, (x, y) -> new Point(x-y, y));
+        if (figure4 != null)
+            return figure4;
+
+       return null;
+    }
+
+    private Figure checkLine(final Game game, int i, final BiFunction<Integer, Integer, Point> biFunction) {
         int counterO = 0;
-
-        for (int i = 0; i < fieldSize; i++) {
-            for (int j = 0; j < fieldSize; j++) {
-                Point point = new Point(i, j);
-                if ((X).equals(field.getFigure(point)))
-                    counterX++;
-                if ((X).equals(field.getFigure(point)))
-                    counterO++;
-                if (counterX == fieldSize)
-                    return X;
-                if (counterO == fieldSize)
-                    return O;
-            }
-            counterO = 0;
-            counterX = 0;
-        }
-
-        for (int i = 0; i < fieldSize; i++) {
-            for (int j = 0; j < fieldSize; j++) {
-                Point point = new Point(j, i);
-                if ((X).equals(field.getFigure(point)))
-                    counterX++;
-                if ((O).equals(field.getFigure(point)))
-                    counterO++;
-                if (counterX == fieldSize)
-                    return X;
-                if (counterO == fieldSize)
-                    return O;
-            }
-            counterO = 0;
-            counterX = 0;
-        }
-
-        for (int i = 0; i < fieldSize; i++) {
-            Point point = new Point(i, i);
+        int counterX = 0;
+        Field field = game.getField();
+        int fieldSize = field.getSize();
+        for (int j = 0; j < fieldSize; j++) {
+            Point point = biFunction.apply(i, j);
             if ((X).equals(field.getFigure(point)))
                 counterX++;
             if ((O).equals(field.getFigure(point)))
-                counterO++;
-            if (counterX == fieldSize)
-                return X;
-            if (counterO == fieldSize)
-                return O;
-        }
-
-        counterO = 0;
-        counterX = 0;
-        int pointX = fieldSize;
-        for (int i = 0; i < fieldSize; i++) {
-            Point point = new Point(--pointX, i);
-            if ((X).equals(field.getFigure(point)))
-                counterX++;
-            if ((O).equals((field.getFigure(point))))
                 counterO++;
             if (counterX == fieldSize)
                 return X;

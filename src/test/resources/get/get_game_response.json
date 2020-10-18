@@ -6,13 +6,13 @@
     "player": {
       "name": "player"
     },
-    "figure": "O"
+    "figure": "X"
   },
   "player2": {
     "player": {
       "name": "AI"
     },
-    "figure": "X"
+    "figure": "O"
   },
   "field": {
     "size": 3,

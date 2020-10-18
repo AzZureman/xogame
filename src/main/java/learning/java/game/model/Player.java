@@ -4,14 +4,15 @@ import java.util.UUID;
 
 public class Player {
 
-    private UUID id = UUID.randomUUID();
+    private UUID id;
 
-    private String name;
+    private String name = "godOfXO";
 
     public Player() {
     }
 
     public Player(String name) {
+        this.id = UUID.randomUUID();
         this.name = name;
     }
 

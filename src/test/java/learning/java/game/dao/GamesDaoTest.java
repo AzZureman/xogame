@@ -1,15 +1,11 @@
 package learning.java.game.dao;
 
 import learning.java.game.controller.GameControllerSingle;
-import learning.java.game.model.Figure;
-import learning.java.game.model.Game;
-import learning.java.game.model.Point;
+import learning.java.game.model.*;
 import org.junit.jupiter.api.Test;
 
-import java.sql.SQLException;
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.LinkedList;
+import java.util.UUID;
 
 class GamesDaoTest {
 
@@ -22,22 +18,22 @@ class GamesDaoTest {
     private final LinkedList<UUID> gameKeySet = new LinkedList<>();
 
     @Test
-    void create() throws SQLException {
-        Game game = gameController.newGame(Figure.X);
-        playersDao.create(game.getPlayer1().getPlayer());
-        playersDao.create(game.getPlayer2().getPlayer());
+    void create() {
+        Player player = new Player("Max");
+        playersDao.create(player);
+        Game game = gameController.newGame(Figure.X, player, null);
         gameKeySet.add(dao.create(game));
     }
 
     @Test
-    void read() throws SQLException {
+    void read() {
         create();
         Game game =  dao.read(gameKeySet.getLast());
 
     }
 
     @Test
-    void update() throws  SQLException {
+    void update() {
         create();
         Game game = dao.read(gameKeySet.getLast());
         game.setWinner(Figure.O);
@@ -47,13 +43,13 @@ class GamesDaoTest {
     }
 
     @Test
-    void delete() throws SQLException {
+    void delete() {
         create();
         UUID id = gameKeySet.getLast();
         Game game = dao.read(id);
 
-        System.out.println(dao.read(id).getId());
         dao.delete(game);
-        System.out.println(dao.read(id).getId());
+        dao.read(id);
+        dao.read(id);
     }
 }

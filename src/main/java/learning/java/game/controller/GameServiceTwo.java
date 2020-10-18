@@ -15,11 +15,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Component("gameServiceSingleBean")
-public class GameServiceSingle implements GameService {
+@Component("gameServiceTwoBean")
+public class GameServiceTwo implements GameService {
 
     @Autowired
-    @Qualifier("gameControllerSingleBean")
+    @Qualifier("gameControllerTwoBean")
     private GameController gameControl;
 
     @Autowired
@@ -41,12 +41,13 @@ public class GameServiceSingle implements GameService {
     @Override
     public Game postNewGame(CreateGameRequest createGameRequest) {
         Figure postFigure = createGameRequest.getSidePlayer1();
-        Player player = playersDao.read(createGameRequest.getPlayerId1());
-        if (postFigure == null || player == null)
+        Player player1 = playersDao.read(createGameRequest.getPlayerId1());
+        Player player2 = playersDao.read(createGameRequest.getPlayerId2());
+        if (postFigure == null || player1 == null || player2 == null)
             throw new IllegalArgumentException("Sent request with incorrect body. " +
-                    "With incorrect key, try \"sidePlayer1:\", \"playerId1:\"");
+                    "With incorrect key, try \"sidePlayer1:\", \"playerId1:\", \"playerId2:\"");
 
-        Game game = gameControl.newGame(postFigure, player, null);
+        Game game = gameControl.newGame(postFigure, player1, player2);
         game.setTurn(gameControl.currentFigure(game.getField()));
         dao.create(game);
         return game;

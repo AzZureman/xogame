@@ -10,7 +10,6 @@ import learning.java.game.model.Player;
 import learning.java.game.model.Point;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.postgresql.util.PSQLException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +23,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.SQLException;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;

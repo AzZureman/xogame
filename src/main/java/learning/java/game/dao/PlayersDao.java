@@ -34,9 +34,10 @@ public class PlayersDao implements Dao<Player, UUID> {
         return execute(SQLPlayer.SELECT, statement -> {
             statement.setObject(1, uuid);
             ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
-            player.setId((UUID)resultSet.getObject("id"));
-            player.setName(resultSet.getString("name"));
+            while (resultSet.next()) {
+                player.setId((UUID) resultSet.getObject("id"));
+                player.setName(resultSet.getString("name"));
+            }
             return player;
         });
     }

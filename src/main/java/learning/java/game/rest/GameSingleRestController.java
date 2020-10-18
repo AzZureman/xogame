@@ -6,13 +6,15 @@ import learning.java.game.rest.item.GameTO;
 import learning.java.game.rest.request.CreateGameRequest;
 import learning.java.game.rest.request.TurnGameRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("game")
-public class GameRestController {
+public class GameSingleRestController {
 
     @Autowired
+    @Qualifier("gameServiceSingleBean")
     GameService gameService;
 
     @Autowired

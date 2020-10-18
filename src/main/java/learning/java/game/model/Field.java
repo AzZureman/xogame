@@ -39,6 +39,9 @@ public class Field {
         int x = point.getX();
         int y = point.getY();
         checkPoint(x, y);
+        if (figures[x][y] != null)
+            throw new IllegalArgumentException("Incorrect index. Figure on point x:" +
+                    x + " y:" + y + " not NULL.\n" + this.toString());
         figures[x][y] = figure;
         counterFigure++;
     }
@@ -54,7 +57,7 @@ public class Field {
     private void checkPoint(int x, int y) {
         if (x >= size || x < 0 || y >= size || y < 0)
             throw new IndexOutOfBoundsException
-                    ("Incorrect index.Expected point x = " + x + ", point y = " + y +
+                    ("Incorrect index.Expected point x:" + x + ", y:" + y +
                             ". They must fall into the interval 0 <= point > " + size);
     }
 

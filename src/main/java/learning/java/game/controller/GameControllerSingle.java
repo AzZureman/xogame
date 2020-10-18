@@ -1,16 +1,14 @@
 package learning.java.game.controller;
 
-import learning.java.game.exception.GameOverException;
 import learning.java.game.model.*;
 import org.springframework.stereotype.Component;
 
 import java.util.Random;
-import java.util.function.BiFunction;
 
-@Component
+@Component("gameControllerSingleBean")
 public class GameControllerSingle implements GameController {
 
-    public Game newGame(Figure figure, Player player1, Player player2) {
+    public Game newGame(Figure figure, Player player1, Player nullPlayer) {
         return new Game(){{
             setType("singlePlayer");
             setName("XO");
@@ -18,12 +16,7 @@ public class GameControllerSingle implements GameController {
                 setPlayer(player1);
                 setFigure(figure);
             }});
-            setPlayer2(new PlayerFigure(){{
-                setPlayer(new Player("AI"){{
-                    setId(null);
-                }});
-                setFigure(oppositeFig(figure));
-            }});
+            setPlayer2(getAIPlayer(figure));
             setField(new Field(3));
             setTurn(Figure.X);
         }};
@@ -33,18 +26,30 @@ public class GameControllerSingle implements GameController {
         return Figure.X == figure ? Figure.O : Figure.X;
     }
 
-    public Figure letsPlay(Game game, Point point) {
+    /**
+     *
+     * @param playersFigure must be figure which play present player,
+     *                      because AI player take opposite figure
+     */
+    public PlayerFigure getAIPlayer(final Figure playersFigure){
+        return new PlayerFigure(){{
+            setPlayer( new Player("AI"){{
+               setId(null);
+            }});
+            setFigure(oppositeFig(playersFigure));
+        }};
+    }
+
+    public void letsPlay(Game game, Point point) {
         Field field = game.getField();
         if (game.getPlayer1().getFigure() == Figure.X) {
             applyFigure(field, point);
             randomMove(field);
-            game.setWinner(checkAndSetWinner(game));
-            return game.getWinner();
+        } else {
+            randomMove(field);
+            applyFigure(field, point);
         }
-        randomMove(field);
-        applyFigure(field, point);
-        game.setWinner(checkAndSetWinner(game));
-        return game.getWinner();
+        checkAndSetWinner(game);
     }
 
     private void randomMove(final Field field) {
@@ -67,61 +72,5 @@ public class GameControllerSingle implements GameController {
     public Figure currentFigure(final Field field) {
         if (field.getCounterFigure() % 2 == 1) return Figure.O;
         return Figure.X;
-    }
-
-    private final Figure X = Figure.X;
-    private final Figure O = Figure.O;
-
-    private Figure checkAndSetWinner(final Game game) {
-        final Figure figure = checkLineWinner(game);
-        if (figure != null) {
-            game.setWinner(figure);
-            throw new GameOverException(game);
-        }
-        return null;
-    }
-
-    private Figure checkLineWinner(final Game game) {
-        int fieldSize = game.getField().getSize();
-        for (int i = 0; i < fieldSize; i++) {
-            final Figure figure = checkLine(game, i, (x, y) -> new Point(x, y));
-            if (figure != null)
-                return figure;
-        }
-
-        for (int i = 0; i < fieldSize; i++) {
-            final Figure figure2 = checkLine(game, i, (x, y) -> new Point(y, x));
-            if (figure2 != null)
-                return figure2;
-        }
-
-        final Figure figure3 = checkLine(game, -1, (x, y) -> new Point(y, y));
-        if (figure3 != null)
-            return figure3;
-
-        final Figure figure4 = checkLine(game, fieldSize - 1, (x, y) -> new Point(x-y, y));
-        if (figure4 != null)
-            return figure4;
-
-       return null;
-    }
-
-    private Figure checkLine(final Game game, int i, final BiFunction<Integer, Integer, Point> biFunction) {
-        int counterO = 0;
-        int counterX = 0;
-        Field field = game.getField();
-        int fieldSize = field.getSize();
-        for (int j = 0; j < fieldSize; j++) {
-            Point point = biFunction.apply(i, j);
-            if ((X).equals(field.getFigure(point)))
-                counterX++;
-            if ((O).equals(field.getFigure(point)))
-                counterO++;
-            if (counterX == fieldSize)
-                return X;
-            if (counterO == fieldSize)
-                return O;
-        }
-        return null;
     }
 }

@@ -30,8 +30,10 @@ public class GamesDao implements Dao<Game, UUID> {
                 statement.setInt(6, createFields(game.getField()));
                 ResultSet resultSet = statement.executeQuery();
                 resultSet.next();
-
                 createPlayersFigure(game.getPlayer1(), id);
+                PlayerFigure playerFigure = game.getPlayer2();
+                if (playerFigure.getPlayer().getId() != null)
+                    createPlayersFigure(playerFigure, id);
                 return UUID.fromString(resultSet.getString("id"));
             });
     }
@@ -64,17 +66,20 @@ public class GamesDao implements Dao<Game, UUID> {
             return  execute(SQLGames.SELECT, (connection, statement) -> {
                 statement.setObject(1, uuid);
                 ResultSet resultSet = statement.executeQuery();
-                Game game = null;
+                Game game = new Game();
                 while (resultSet.next()) {
-                    game = controllerSingle
-                            .newGame(Figure.figureFromString(resultSet.getString("figure")), null, null);
                     game.setId((UUID) resultSet.getObject("game_id"));
                     game.setName(resultSet.getString("name"));
                     game.setType(resultSet.getString("type"));
                     game.setTurn(Figure.figureFromString(resultSet.getString("turn")));
                     game.setWinner(Figure.figureFromString(resultSet.getString("winner")));
                     game.setField(readFields(resultSet.getInt("field_id")));
-                    game.setPlayer1(readPlayerFigures(resultSet, connection));
+                    if (game.getPlayer1() == null) {
+                        game.setPlayer1(readPlayerFigures(resultSet, connection));
+                        game.setPlayer2(controllerSingle.getAIPlayer(game.getPlayer1().getFigure()));
+                    } else {
+                        game.setPlayer2(readPlayerFigures(resultSet, connection));
+                    }
                 }
                 return game;
             });
